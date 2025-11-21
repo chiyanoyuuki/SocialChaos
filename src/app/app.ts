@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, signal } from '@angular/core';
+import { Component, isDevMode, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PERSOS } from '../../public/persos';
 import { DECK } from '../../public/deck';
@@ -108,7 +108,6 @@ export class App {
     this.carte = this.data.game.deck.shift();
     if (!joueur.deck) joueur.deck = [];
     joueur.deck.push(this.carte);
-    this.getAction();
   }
 
   declencherEffetSupplementaire() {
@@ -181,10 +180,16 @@ export class App {
     }
   }
 
-  getAction() {}
+  joueurProp() {
+    return Object.keys(this.data.joueurs[0]);
+  }
 
   addPlayer() {
     this.popup = { title: 'Ajouter joueur', id: 'addplayer', txt: true, model: '' };
+  }
+
+  removePlayer() {
+    this.popup = { title: 'Supprimer joueur', id: 'deleteplayer', joueurs: true, model: '' };
   }
 
   terminertour() {
@@ -195,24 +200,109 @@ export class App {
     this.popup = undefined;
   }
 
+  addTournee() {
+    this.popup = { title: 'Ajouter une tournée', id: 'addtournee', each: true, model: {} };
+  }
+
+  reinitgame() {
+    this.popup = { id: 'reinitgame', title: 'Réinitialiser la partie ?' };
+  }
+
+  reinitall() {
+    this.popup = { id: 'reinitall', title: 'Réinitialiser tout?' };
+  }
+
+  reinitgorgees() {
+    this.popup = { id: 'reinitgorgees', title: 'Réinitialiser les gorgées ?' };
+  }
+
+  reinitboissons() {
+    this.popup = { id: 'reinitboissons', title: 'Réinitialiser les boissons ?' };
+  }
+
+  reinitsmthg() {
+    this.popup = {
+      id: 'reinitsmthg',
+      title: 'Réinitialiser quelque chose ?',
+      smthg: true,
+      model: {},
+    };
+  }
+
   validatePopup() {
     if (this.popup.id == 'addplayer') {
-      this.data.joueurs.push({ nom: this.popup.model });
+      this.data.joueurs.push({
+        nom: this.popup.model,
+        gorgees: 0,
+        culsec: 0,
+        deck: [],
+        boissons: [],
+      });
       this.updateData();
     } else if (this.popup.id == 'endtour') {
       this.changeTour();
       this.carte = undefined;
       this.pioche = false;
       this.updateData();
-    } else if (this.popup.id == 'reinit') {
+    } else if (this.popup.id == 'reinitgame') {
       this.data.game.deck = undefined;
       this.genererDeck();
       this.data.joueurs.forEach((j: any) => {
         j.deck = [];
       });
       this.updateData();
+    } else if (this.popup.id == 'reinitgorgees') {
+      this.data.joueurs.forEach((j: any) => {
+        j.gorgees = 0;
+        j.culsec = 0;
+      });
+      this.updateData();
+    } else if (this.popup.id == 'reinitboissons') {
+      this.data.joueurs.forEach((j: any) => {
+        j.boissons = [];
+      });
+      this.updateData();
+    } else if (this.popup.id == 'reinitall') {
+      this.data.game.deck = undefined;
+      this.genererDeck();
+      this.data.joueurs.forEach((j: any) => {
+        j.gorgees = 0;
+        j.culsec = 0;
+        j.boissons = [];
+        j.deck = [];
+      });
+      this.updateData();
+    } else if (this.popup.id == 'deleteplayer') {
+      let joueur = this.data.joueurs.find((j: any) => j.nom == this.popup.model);
+      this.data.joueurs.splice(this.data.joueurs.indexOf(joueur), 1);
+      if (this.data.game.tour == this.popup.model) {
+        this.changeTour();
+      }
+      this.updateData();
+    } else if (this.popup.id == 'addtournee') {
+      for (const key of Object.keys(this.popup.model)) {
+        const value = this.popup.model[key as keyof typeof this.popup.model];
+        let joueur = this.data.joueurs.find((j: any) => j.nom == key);
+        joueur.boissons.push(value);
+        this.updateData();
+      }
+    } else if (this.popup.id == 'reinitsmthg') {
+      console.log(this.popup.model.key, this.popup.model.value);
+      let joueur = this.data.joueurs.find((j: any) => j.nom == this.popup.model.key);
+      if (this.popup.model.value == 'gorgees' || this.popup.model.value == 'culsec')
+        joueur[this.popup.model.value] = 0;
+      else joueur[this.popup.model.value] = [];
+      this.updateData();
     }
     this.popup = undefined;
+  }
+
+  inTheGame() {
+    return this.data.joueurs.find((j: any) => j.nom == this.joueur) != undefined;
+  }
+
+  isDevMode() {
+    return isDevMode;
   }
 
   changeTour() {
@@ -243,16 +333,13 @@ export class App {
     }
   }
 
-  reinit() {
-    this.popup = { id: 'reinit', title: 'Réinitialiser ?' };
-  }
-
   loadSiteData() {
     this.http.get<any>(this.link + 'getchaos.php').subscribe((data) => {
       let action = this.data && this.data.game.tour != this.joueur && data.game.tour == this.joueur;
       this.data = data;
       if (!this.data.game.deck) this.genererDeck();
-      if (this.data.joueurs.length == 0) this.data.joueurs.push({ nom: 'Charles' });
+      if (this.data.joueurs.length == 0)
+        this.data.joueurs.push({ nom: 'Charles', gorgees: 0, culsec: 0, deck: [], boissons: [] });
       if (!this.data.game.tour) this.data.game.tour = 'Charles';
 
       if (action) {

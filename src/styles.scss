@@ -37,6 +37,19 @@ input {
   border-radius: 20px;
   filter: drop-shadow(1px 1px 5px black);
 }
+select {
+  width: calc(100% - 40px);
+  color: white;
+  font-weight: bold;
+  background-color: #202020;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  filter: drop-shadow(1px 1px 5px black);
+  display: flex;
+  justify-content: center;
+  margin: auto;
+}
 
 .admin,
 .boutons {
@@ -70,9 +83,8 @@ input {
   z-index: 999;
   .content {
     width: 76vw;
-    height: 20vh;
     position: absolute;
-    top: 35vh;
+    top: 20vh;
     left: 6vw;
     border: 5px ridge #bbbbbb;
     border-radius: 50px;
@@ -89,6 +101,18 @@ input {
     button {
       margin: auto;
       display: flex;
+    }
+    .each {
+      .joueur {
+        display: flex;
+        p {
+          top: 10px;
+          width: 30%;
+        }
+        input {
+          width: 70%;
+        }
+      }
     }
   }
   .bot {
@@ -190,5 +214,25 @@ input {
     object-fit: contain;
     height: 120%;
     top: 10%;
+  }
+}
+
+.joueurs {
+  margin-top: 5vh;
+  display: flex;
+  flex-flow: wrap;
+  justify-content: space-around;
+  .joueur {
+    border: 1px solid white;
+    padding: 10px;
+    width: 35%;
+    p:nth-child(1) {
+      text-align: center;
+    }
+    p:nth-child(3) {
+      border-bottom: 2px solid white;
+      padding-bottom: 5px;
+      margin-bottom: 5px;
+    }
   }
 }

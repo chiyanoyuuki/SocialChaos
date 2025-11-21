@@ -3,6 +3,30 @@
     <p class="title">{{ popup.title | uppercase }}</p>
     <div class="center">
       <input type="text" *ngIf="popup.txt" [(ngModel)]="popup.model" />
+      <div *ngIf="popup.each" class="each">
+        <div *ngFor="let joueur of data.joueurs; let i = index" class="joueur">
+          <p>{{ joueur.nom }}</p>
+          <input type="text" [(ngModel)]="popup.model[joueur.nom]" />
+        </div>
+      </div>
+      <div *ngIf="popup.smthg" class="smthg">
+        <select [(ngModel)]="popup.model.key">
+          <option *ngFor="let joueur of data.joueurs" value="{{ joueur.nom }}">
+            {{ joueur.nom }}
+          </option>
+        </select>
+
+        <select [(ngModel)]="popup.model.value">
+          <option *ngFor="let prop of joueurProp()" value="{{ prop }}">
+            {{ prop }}
+          </option>
+        </select>
+      </div>
+      <select *ngIf="popup.joueurs" [(ngModel)]="popup.model">
+        <option *ngFor="let joueur of data.joueurs" value="{{ joueur.nom }}">
+          {{ joueur.nom }}
+        </option>
+      </select>
     </div>
     <div class="bot">
       <button (click)="annulerPopup()">Annuler</button>
@@ -12,15 +36,26 @@
 </div>
 
 <div *ngIf="admin" class="admin">
-  <button (click)="reinit()">Reinitialiser</button>
+  <button (click)="reinitall()">Reinitialiser Tout</button>
+  <button (click)="reinitboissons()">Reinitialiser Boissons</button>
+  <button (click)="reinitgorgees()">Reinitialiser Gorgées</button>
+  <button (click)="reinitsmthg()">Reinitialiser Stat</button>
+  <button (click)="reinitgame()">Reinitialiser Partie</button>
+</div>
+
+<div *ngIf="admin" class="admin">
   <button (click)="addPlayer()">Ajouter Joueur</button>
-  <button (click)="updateData()">Save Data</button>
+  <button (click)="removePlayer()">Supprimer Joueur</button>
+  <button (click)="addTournee()">Ajouter Tournée</button>
+  <button (click)="updateData()" *ngIf="isDevMode()">Save Data</button>
 </div>
 
 <div class="boutons" *ngIf="data">
   <p *ngIf="joueurDuTour().nom == joueur">C'est mon tour !</p>
   <p *ngIf="joueurDuTour().nom != joueur">Tour de {{ joueurDuTour().nom }}</p>
-  <button (click)="loadSiteData()" *ngIf="joueurDuTour().nom != joueur">Actualiser</button>
+  <button (click)="loadSiteData()" *ngIf="joueurDuTour().nom != joueur && inTheGame()">
+    Actualiser
+  </button>
   <button (click)="piocher()" *ngIf="joueurDuTour().nom == joueur && !pioche">Piocher</button>
   <button (click)="terminertour()" *ngIf="joueurDuTour().nom == joueur && pioche">
     Terminer tour
@@ -47,4 +82,14 @@
 
 <div class="carte back" *ngIf="!carte && data && joueurDuTour().nom == joueur">
   <img src="dos.png" class="dos" />
+</div>
+
+<div class="joueurs" *ngIf="data">
+  <div *ngFor="let joueur of data.joueurs" class="joueur">
+    <p>{{ joueur.nom }}</p>
+    <p>{{ joueur.gorgees ? joueur.gorgees : 0 }} gorgée{{ joueur.gorgees > 1 ? 's' : '' }}</p>
+    <p>{{ joueur.culsec ? joueur.culsec : 0 }} culsec{{ joueur.culsec > 1 ? 's' : '' }}</p>
+    <p>Boissons :</p>
+    <p *ngFor="let boisson of joueur.boissons">{{ boisson }}</p>
+  </div>
 </div>
